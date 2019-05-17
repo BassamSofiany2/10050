@@ -56,6 +56,7 @@ typedef struct player{
 void initialize_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void print_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void printLine();
+int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int rowCord, int colCord);
  
  
 int main(int argc, char** argv) {
@@ -165,9 +166,9 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
  
 	int totalMoves = numPlayers * 4;
     int move;
+    int row=0;
 	for (move=0; move < totalMoves; ++move) {
 		int rowSelected = 0;
-		int row=0;
 		printf("Player turn: %s ",players[(move%numPlayers)].name,"\n");
 		while(!rowSelected) {
 			printf("Enter the row (0-5) you want to place your token\n");
@@ -284,4 +285,22 @@ int initialize_players(player players[]){
 		}
  
     return numPlayers;
+}
+ 
+ 
+/*CHECKS IF PLAYER CHOOSING THEIR TOKEN IN SIDEWAYS MOVE*/
+int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int row, int col){
+    while(board[row][col].topOfStack == -1 || players[playerNumber].col != board[row][col].squaretokens->col){
+            if(board[row][col].squaretokens == NULL){
+                                  printf("\nERROR: Empty Square\n");
+            }
+          printf("\n Choose the row and column of already placed token");
+            printf("\nEnter row number: ");
+            scanf("%d", &row);
+ 
+            printf("\nEnter column number: ");
+            scanf("%d", &col);
+ 
+    }
+    return 1;
 }
