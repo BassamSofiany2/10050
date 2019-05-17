@@ -64,7 +64,9 @@ void print_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void printLine();
 int initialize_players(player players[]);
 void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers);
+int tokensPerSquare(square board[NUM_ROWS][NUM_COLUMNS], int row, int col);
 int smallestTokenInColoumOne(square board[NUM_ROWS][NUM_COLUMNS]);
+int checkWinner(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers);
 int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers);
 int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int rowCord, int colCord);
 void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player);
@@ -95,6 +97,10 @@ int main(int argc, char** argv)
     //asks each player to place their tokens
     //on the first column of the board
     place_tokens(board, players, numPlayers);
+ 
+ 
+    //manages the turns of the game and identifies a winner
+    play_game(board, players, numPlayers);
  
     return 0;
  
@@ -127,6 +133,97 @@ void initialize_board(square board[NUM_ROWS][NUM_COLUMNS])
     }
 }
  
+ 
+/*
+* This function creates players for the first time
+*
+* Input: the array of players to be initialized
+* Output: The number of players of the game
+*/
+int initialize_players(player players[])
+{
+    int numPlayers;
+ 
+    do
+    {
+        printf("Number of players");
+        scanf("%d",&numPlayers);
+    }
+    while (numPlayers < 2 || numPlayers > 6);
+ 
+    int count=0;
+    int p;
+    int choosenColor[numPlayers];
+    for (p=0; p< numPlayers; p++)
+    {
+ 
+        int numberColor;
+        int favorite_color;
+        int colorSelectedByPlayer = 0;
+        int sameColor=0;
+        while (!colorSelectedByPlayer)
+        {
+            numberColor = 1;
+            printf("Enter a name of player: ");
+            scanf("%s", players[p].name);
+            while(!sameColor)
+            {
+                sameColor=1;
+                printf("Player %s choose your favorite color which is not taken by other players: (0:RED, 1:BLU, 2:GREEN, 3:YELLOW, 4:PINK, 5:ORANGE):  ",players[p].name);
+ 
+                scanf("%d", &favorite_color);
+                // favorite_color 012345
+                // get enum value from
+                int p1;
+                for(p1=0; p1< numPlayers; p1++)
+                {
+                    if((favorite_color)==choosenColor[p1])
+                    {
+                        printf("\n color is already selected by other player please select any other color \n");
+                        sameColor=0;
+                    }
+                }
+                choosenColor[p] =favorite_color;
+            }
+            /* print out the result */
+            switch (favorite_color)
+            {
+            case RED:
+                printf("your favorite color is Red\n");
+                break;
+            case BLU:
+                printf("your favorite color is BLU\n");
+                break;
+            case GREEN:
+                printf("your favorite color is GREEN\n");
+                break;
+            case YELLOW:
+                printf("your favorite color is YELLOW\n");
+                break;
+            case PINK:
+                printf("your favorite color is PINK\n");
+                break;
+            case ORANGE:
+                printf("your favorite color is ORANGE");
+                break;
+            default:
+                printf("you did not choose any color");
+            }
+ 
+            players[p].col=favorite_color;
+            colorSelectedByPlayer = 1;
+ 
+        }
+    }
+ 
+    return numPlayers;
+}
+/*
+* Returns the first letter associated with the color of the token
+*
+* Input: t - pointer to a token
+* Output: initial of the color of the token
+*/
 char print_token(token *t)
 {
     if((*t).col== PINK) return 'P';
@@ -137,6 +234,7 @@ char print_token(token *t)
     if((*t).col== YELLOW) return 'Y';
     return '\0';
 }
+ 
  
 void print_board(square board[NUM_ROWS][NUM_COLUMNS])
 {
@@ -182,7 +280,6 @@ void printLine()
     printf("   -------------------------------------\n");
 }
  
- 
 void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
 {
     printf("Starting the Game.........\n\n");
@@ -193,24 +290,24 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
  
     int totalMoves = numPlayers * 4;
     int move;
-    int row=0;
     for (move=0; move < totalMoves; ++move)
     {
         int rowSelected = 0;
+        int row;
         printf("Player turn: %s ",players[(move%numPlayers)].name,"\n");
         while(!rowSelected)
         {
             printf("Enter the row (0-5) you want to place your token\n");
-            printf("%d", row);
-            //	scanf("%d",&row);
+            scanf("%d",&row);
  
             player player = players[move%numPlayers];
  
-            /* while(smallestTokenInColoumOne(board) < board[row][0].topOfStack){
+            while(smallestTokenInColoumOne(board) < board[row][0].topOfStack)
+            {
                 printf("\nERROR:Place your token on smaller stack\n");
                 printf("Player %s Enter the row 0-5) you want to place your token\n ", players[(move%numPlayers)].name);
                 scanf("%d", &row);
-            }*/
+            }
  
             if(board[row][0].topOfStack>-1)
             {
@@ -226,9 +323,8 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
             board[row][0].squaretokens=newToken;
             board[row][0].topOfStack ++;
             board[row][0].tokensColor[board[row][0].topOfStack]=player.col;
-            print_board(board);
+            //print_board(board);
             rowSelected = 1;
-            row++;
         }
     }
 }
@@ -249,147 +345,34 @@ int smallestTokenInColoumOne(square board[NUM_ROWS][NUM_COLUMNS])
  
     return  smallestTokenRowInColoumOne;
 }
-int initialize_players(player players[])
+ 
+/*CHECKS IF THERE IS WINNER*/
+int checkWinner(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
 {
-    int numPlayers=2;
- 
-    do
-    {
-        printf("Number of players");
-        scanf("%d",&numPlayers);
-    }
-    while (numPlayers < 2 || numPlayers > 6);
- 
-    int count=0;
-    int p;
-    int choosenColor[numPlayers];
-    int favorite_color=0;
-    for (p=0; p< numPlayers; p++)
-    {
- 
-        int numberColor;
-        int colorSelectedByPlayer = 0;
-        int sameColor=0;
-        while (!colorSelectedByPlayer)
-        {
-            numberColor = 1;
-            printf("Enter a name of player: ");
-            scanf("%s", players[p].name);
-            while(!sameColor)
-            {
-                sameColor=1;
-                printf("Player %s choose your favorite color which is not taken by other players: (0:RED, 1:BLU, 2:GREEN, 3:YELLOW, 4:PINK, 5:ORANGE):  ",players[p].name);
- 
-                scanf("%d", &favorite_color);
- 
-                int p1;
-                for(p1=0; p1< numPlayers; p1++)
-                {
-                    /*     if((favorite_color)==choosenColor[p1]){
-                             printf("\n color is already selected by other player please select any other color \n");
-                             sameColor=0;
-                         }*/
-                }
-                choosenColor[p] =favorite_color;
-            }
-            /* print out the result */
-            switch (favorite_color)
-            {
-            case RED:
-                printf("your favorite color is Red\n");
-                break;
-            case BLU:
-                printf("your favorite color is BLU\n");
-                break;
-            case GREEN:
-                printf("your favorite color is GREEN\n");
-                break;
-            case YELLOW:
-                printf("your favorite color is YELLOW\n");
-                break;
-            case PINK:
-                printf("your favorite color is PINK\n");
-                break;
-            case ORANGE:
-                printf("your favorite color is ORANGE");
-                break;
-            default:
-                printf("you did not choose any color");
-            }
- 
-            players[p].col=favorite_color;
-            colorSelectedByPlayer = 1;
- 
-        }
-        favorite_color++;
-    }
- 
-    return numPlayers;
-}
- 
- 
-/*CHECKS IF PLAYER CHOOSING THEIR TOKEN IN SIDEWAYS MOVE*/
-int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int row, int col)
-{
-    while(board[row][col].topOfStack == -1 || players[playerNumber].col != board[row][col].squaretokens->col)
-    {
-        if(board[row][col].squaretokens == NULL)
-        {
-            printf("\nERROR: Empty Square\n");
-        }
-        printf("\n Choose the row and column of already placed token");
-        printf("\nEnter row number: ");
-        scanf("%d", &row);
- 
-        printf("\nEnter column number: ");
-        scanf("%d", &col);
- 
-    }
-    return 1;
-}
- 
- 
-/*MOVING TOKEN ON BOARD*/
-void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player)
-{
-    const char* dayNames[] = {"RED", "BLU", "GREEN", "YELLOW", "PINK", "ORANGE"};
-    token *Currtoken = board[currentRow][currentCol].squaretokens;
-    int Currtop = board[currentRow][currentCol].topOfStack;
-    board[currentRow][currentCol].topOfStack--;
-    if(Currtop>0)
-    {
-        enum color c=board[currentRow][currentCol].tokensColor[Currtop-1];
-        topestToken->col =c ;
-        board[currentRow][currentCol].squaretokens=topestToken;
- 
-    }
-    else
-    {
-        board[currentRow][currentCol].squaretokens=NULL;
-    }
-    board[toBeRow][toBeCol].squaretokens = Currtoken;
-    board[toBeRow][toBeCol].topOfStack++;
- 
- 
-}
- 
-/*CHECKING IF OBSTACLE SHOULD REMAIN OBSTACLE OR NOT*/
-int obstacleCheck(square board[NUM_ROWS][NUM_COLUMNS], int dice, int col)
-{
-    int i = 0;
-    for(i; i < 6; ++i)
+    int colorCounters = 0;
+    int i;
+    for (i = 0; i < numPlayers; ++i)
     {
         int j;
-        for(j = 0; j < col; ++j)
+        for (j = 0; j < NUM_ROWS; ++j)
         {
-            if (board[i][j].squaretokens != NULL)
+            token *token = board[j][8].squaretokens;
+ 
+            while (token != NULL)
             {
-                return 0;
+                if(token->col == players[i].col)
+                {
+                    colorCounters += 1;
+                }
             }
+        }
+        if (colorCounters >= 3)
+        {
+            return i;
         }
     }
  
-    return 1;
+    return 10;
 }
  
 int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
@@ -507,7 +490,6 @@ int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlay
             printf("\nWINNER IS: %s", players[checkWinner(board, players, numPlayers)].name);
             return 1;
         }
- 
         /*RESETING PLAYER*/
         if (i == numPlayers - 1)
         {
@@ -519,31 +501,65 @@ int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlay
  
 }
  
-/*CHECKS IF THERE IS WINNER*/
-int checkWinner(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
+/*CHECKS IF PLAYER CHOOSING THEIR TOKEN IN SIDEWAYS MOVE*/
+int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int row, int col)
 {
-    int colorCounters = 0;
-    int i;
-    for (i = 0; i < numPlayers; ++i)
+    while(board[row][col].topOfStack == -1 || players[playerNumber].col != board[row][col].squaretokens->col)
+    {
+        if(board[row][col].squaretokens == NULL)
+        {
+            printf("\nERROR: Empty Square\n");
+        }
+        printf("\n Choose the row and column of already placed token");
+        printf("\nEnter row number: ");
+        scanf("%d", &row);
+ 
+        printf("\nEnter column number: ");
+        scanf("%d", &col);
+ 
+    }
+    return 1;
+}
+ 
+/*MOVING TOKEN ON BOARD*/
+void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player)
+{
+    const char* dayNames[] = {"RED", "BLU", "GREEN", "YELLOW", "PINK", "ORANGE"};
+    token *Currtoken = board[currentRow][currentCol].squaretokens;
+    int Currtop = board[currentRow][currentCol].topOfStack;
+    board[currentRow][currentCol].topOfStack--;
+    if(Currtop>0)
+    {
+        enum color c=board[currentRow][currentCol].tokensColor[Currtop-1];
+        topestToken->col =c ;
+        board[currentRow][currentCol].squaretokens=topestToken;
+ 
+    }
+    else
+    {
+        board[currentRow][currentCol].squaretokens=NULL;
+    }
+    board[toBeRow][toBeCol].squaretokens = Currtoken;
+    board[toBeRow][toBeCol].topOfStack++;
+ 
+ 
+}
+ 
+/*CHECKING IF OBSTACLE SHOULD REMAIN OBSTACLE OR NOT*/
+int obstacleCheck(square board[NUM_ROWS][NUM_COLUMNS], int dice, int col)
+{
+    int i = 0;
+    for(i; i < 6; ++i)
     {
         int j;
-        for (j = 0; j < NUM_ROWS; ++j)
+        for(j = 0; j < col; ++j)
         {
-            token *token = board[j][8].squaretokens;
- 
-            while (token != NULL)
+            if (board[i][j].squaretokens != NULL)
             {
-                if(token->col == players[i].col)
-                {
-                    colorCounters += 1;
-                }
+                return 0;
             }
-        }
-        if (colorCounters >= 3)
-        {
-            return i;
         }
     }
  
-    return 10;
+    return 1;
 }
