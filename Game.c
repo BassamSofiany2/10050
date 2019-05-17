@@ -57,6 +57,7 @@ void initialize_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void print_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void printLine();
  
+ 
 int main(int argc, char** argv) {
  
     //the board is defined as a 2-Dimensional array of squares
@@ -73,6 +74,13 @@ int main(int argc, char** argv) {
  
     //prints the board
     print_board(board);
+ 
+    //creates the players
+    numPlayers = initialize_players(players);
+ 
+    //asks each player to place their tokens
+    //on the first column of the board
+    place_tokens(board, players, numPlayers);
  
     return 0;
  
@@ -145,4 +153,135 @@ void print_board(square board[NUM_ROWS][NUM_COLUMNS]){
  
 void printLine(){
   printf("   -------------------------------------\n");
+}
+ 
+ 
+void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
+  printf("Starting the Game.........\n\n");
+	printf("We require to place all our tokens on first column of the board\n");
+	printf("RULE:\n");
+	printf("A token should be placed first on top of one of the smallest stacks.\n");
+	printf("A player cannot stack a token on top of his/her token.\n\n\n");
+ 
+	int totalMoves = numPlayers * 4;
+    int move;
+	for (move=0; move < totalMoves; ++move) {
+		int rowSelected = 0;
+		int row=0;
+		printf("Player turn: %s ",players[(move%numPlayers)].name,"\n");
+		while(!rowSelected) {
+			printf("Enter the row (0-5) you want to place your token\n");
+			printf("%d", row);
+		//	scanf("%d",&row);
+ 
+			player player = players[move%numPlayers];
+ 
+            /* while(smallestTokenInColoumOne(board) < board[row][0].topOfStack){
+                printf("\nERROR:Place your token on smaller stack\n");
+                printf("Player %s Enter the row 0-5) you want to place your token\n ", players[(move%numPlayers)].name);
+                scanf("%d", &row);
+            }*/
+ 
+            if(board[row][0].topOfStack>-1){
+			    while(board[row][0].squaretokens->col==player.col){
+			        printf("You can not put your token on sameColor");
+			        printf("Enter the row (0-5) you want to place your token\n");
+			        scanf("%d",&row);
+			    }
+            }
+           token *newToken =(struct token*) malloc(sizeof(token));
+            newToken->col = player.col;
+            board[row][0].squaretokens=newToken;
+            board[row][0].topOfStack ++;
+            board[row][0].tokensColor[board[row][0].topOfStack]=player.col;
+            print_board(board);
+			rowSelected = 1;
+			row++;
+		}
+	}
+}
+ //check smallest token for placing the it initialy
+int smallestTokenInColoumOne(square board[NUM_ROWS][NUM_COLUMNS])
+{
+    int tokenCount[6];
+   int smallestTokenRowInColoumOne=board[0][0].topOfStack;
+   int i;
+    for(i = 0; i < NUM_ROWS; ++i){
+        tokenCount[i] = board[i][0].topOfStack;
+        if(smallestTokenRowInColoumOne>tokenCount[i]){
+            smallestTokenRowInColoumOne=tokenCount[i];
+        }
+    }
+ 
+    return  smallestTokenRowInColoumOne;
+}
+int initialize_players(player players[]){
+   int numPlayers=2;
+ 
+    do {
+        printf("Number of players");
+        scanf("%d",&numPlayers);
+    } while (numPlayers < 2 || numPlayers > 6);
+ 
+    int count=0;
+    int p;
+    int choosenColor[numPlayers];
+    int favorite_color=0;
+	for (p=0; p< numPlayers; p++) {
+ 
+		int numberColor;
+		int colorSelectedByPlayer = 0;
+        int sameColor=0;
+		while (!colorSelectedByPlayer) {
+        	numberColor = 1;
+         printf("Enter a name of player: ");
+         scanf("%s", players[p].name);
+         while(!sameColor){
+            sameColor=1;
+            printf("Player %s choose your favorite color which is not taken by other players: (0:RED, 1:BLU, 2:GREEN, 3:YELLOW, 4:PINK, 5:ORANGE):  ",players[p].name);
+ 
+        		scanf("%d", &favorite_color);
+ 
+        		int p1;
+                for(p1=0; p1< numPlayers; p1++){
+                   /*     if((favorite_color)==choosenColor[p1]){
+                            printf("\n color is already selected by other player please select any other color \n");
+                            sameColor=0;
+                        }*/
+                }
+                choosenColor[p] =favorite_color;
+        }
+            /* print out the result */
+            switch (favorite_color)
+            {
+            case RED:
+                printf("your favorite color is Red\n");
+                break;
+            case BLU:
+                printf("your favorite color is BLU\n");
+                break;
+            case GREEN:
+                printf("your favorite color is GREEN\n");
+                break;
+            case YELLOW:
+                printf("your favorite color is YELLOW\n");
+                break;
+            case PINK:
+                printf("your favorite color is PINK\n");
+                break;
+            case ORANGE:
+                printf("your favorite color is ORANGE");
+                break;
+            default:
+                printf("you did not choose any color");
+            }
+ 
+                players[p].col=favorite_color;
+				colorSelectedByPlayer = 1;
+ 
+			}
+			favorite_color++;
+		}
+ 
+    return numPlayers;
 }
