@@ -350,6 +350,7 @@ int obstacleCheck(square board[NUM_ROWS][NUM_COLUMNS], int dice, int col){
  
 int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
     int row, col, upOrDown;
+        int isWinner = checkWinner(board, players, numPlayers);
     printf("Now we will start moving towards right.... \n\n");
 	printf("RULE:\n");
 	printf("Roll the dice\n");
@@ -441,7 +442,12 @@ int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlay
                     tokenTravel(board, dice, col, dice, col+1,topestToken, players[i]);
                     print_board(board);
                 }
+                isWinner = checkWinner(board, players, numPlayers);
  
+                if (isWinner != 10){
+                    printf("\nWINNER IS: %s", players[checkWinner(board, players, numPlayers)].name);
+                    return 1;
+                }
  
                     /*RESETING PLAYER*/
                 if (i == numPlayers - 1){
@@ -451,4 +457,27 @@ int play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlay
  
  
  
+}
+ 
+/*CHECKS IF THERE IS WINNER*/
+int checkWinner(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
+    int colorCounters = 0;
+    int i;
+    for (i = 0; i < numPlayers; ++i){
+        int j;
+        for (j = 0; j < NUM_ROWS; ++j){
+            token *token = board[j][8].squaretokens;
+ 
+            while (token != NULL){
+                if(token->col == players[i].col){
+                    colorCounters += 1;
+                }
+            }
+        }
+        if (colorCounters >= 3){
+                return i;
+        }
+    }
+ 
+    return 10;
 }
