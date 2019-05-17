@@ -58,7 +58,7 @@ void print_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void printLine();
 int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int rowCord, int colCord);
 void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player);
- 
+int obstacleCheck(square board[NUM_ROWS][NUM_COLUMNS], int dice, int col);
  
 int main(int argc, char** argv) {
  
@@ -326,4 +326,19 @@ void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, in
     board[toBeRow][toBeCol].topOfStack++;
  
  
+}
+ 
+/*CHECKING IF OBSTACLE SHOULD REMAIN OBSTACLE OR NOT*/
+int obstacleCheck(square board[NUM_ROWS][NUM_COLUMNS], int dice, int col){
+    int i = 0;
+    for(i; i < 6; ++i){
+         int j;
+        for(j = 0; j < col; ++j){
+            if (board[i][j].squaretokens != NULL){
+                return 0;
+            }
+        }
+    }
+ 
+    return 1;
 }
