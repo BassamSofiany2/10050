@@ -57,6 +57,7 @@ void initialize_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void print_board(square board[NUM_ROWS][NUM_COLUMNS]);
 void printLine();
 int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int playerNumber, int rowCord, int colCord);
+void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player);
  
  
 int main(int argc, char** argv) {
@@ -303,4 +304,26 @@ int isCorrectToken(square board[NUM_ROWS][NUM_COLUMNS], player players[], int pl
  
     }
     return 1;
+}
+ 
+ 
+/*MOVING TOKEN ON BOARD*/
+void tokenTravel(square board[][NUM_COLUMNS], int currentRow, int currentCol, int toBeRow, int toBeCol, token *topestToken,player player){
+    const char* dayNames[] = {"RED", "BLU", "GREEN", "YELLOW", "PINK", "ORANGE"};
+    token *Currtoken = board[currentRow][currentCol].squaretokens;
+    int Currtop = board[currentRow][currentCol].topOfStack;
+    board[currentRow][currentCol].topOfStack--;
+    if(Currtop>0){
+        enum color c=board[currentRow][currentCol].tokensColor[Currtop-1];
+        topestToken->col =c ;
+        board[currentRow][currentCol].squaretokens=topestToken;
+ 
+    }
+    else{
+        board[currentRow][currentCol].squaretokens=NULL;
+    }
+    board[toBeRow][toBeCol].squaretokens = Currtoken;
+    board[toBeRow][toBeCol].topOfStack++;
+ 
+ 
 }
